@@ -57,18 +57,27 @@ void Update()
         dirtParticle.Stop();
     }
 
-    // Throw sphere with L
-    if (Input.GetKeyDown(KeyCode.L))
-    {
-        GameObject projectile = Instantiate(
-            projectilePrefab,
-            transform.position + transform.forward + Vector3.up * 1f,
-            Quaternion.identity
-        );
-        Rigidbody projRb = projectile.GetComponent<Rigidbody>();
-        projRb.AddForce(transform.forward * throwForce);
-        Destroy(projectile, 3f);
-    }
+        // Throw sphere with L
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            GameObject projectile = Instantiate(
+                projectilePrefab,
+                transform.position + transform.forward + Vector3.up * 1f,
+                Quaternion.identity
+            );
+            Rigidbody projRb = projectile.GetComponent<Rigidbody>();
+            projRb.AddForce(transform.forward * throwForce);
+            Destroy(projectile, 3f);
+        }
+    float horizontalInput = Input.GetAxis("Horizontal");
+float moveSpeed = 10f;
+transform.Translate(Vector3.right * horizontalInput * moveSpeed * Time.deltaTime);
+
+// Clamp player position (so they stay in camera range)
+float minX = -20f;
+float maxX = 100f; // adjust to your level width
+transform.position = new Vector3(Mathf.Clamp(transform.position.x, minX, maxX), transform.position.y, transform.position.z);
+
 }
 
 
