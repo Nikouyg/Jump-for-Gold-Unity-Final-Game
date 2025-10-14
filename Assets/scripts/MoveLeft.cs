@@ -1,30 +1,27 @@
 using UnityEngine;
 
 public class MoveLeft : MonoBehaviour
-
 {
-    private float speed=30;
-    private PlayerController PlayerControllerScripts;
-    private float leftBound= -15;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private float speed = 30;
+    private PlayerController playerControllerScript;
+    private float leftBound = -15;
+
     void Start()
     {
-        PlayerControllerScripts=GameObject.Find("Player").GetComponent<PlayerController>();
+        playerControllerScript = GameObject.Find("Player").GetComponent<PlayerController>();
     }
 
-    // Update is called once per frame
     void Update()
-
-    { 
-        if(PlayerControllerScripts.gameOver==false)
     {
+        // Disable auto movement unless you are in endless-runner mode
+        if (!playerControllerScript.gameOver && playerControllerScript.enableAutoScroll)
+        {
+            transform.Translate(Vector3.left * Time.deltaTime * speed);
+        }
 
-    
-        transform.Translate(Vector3.left * Time.deltaTime * speed);
+        if (transform.position.x < leftBound && gameObject.CompareTag("Obstacle"))
+        {
+            Destroy(gameObject);
+        }
     }
-    if(transform.position.x<leftBound && gameObject.CompareTag("Obstacle"))
-    {
-Destroy(gameObject);
-    }
-}
 }

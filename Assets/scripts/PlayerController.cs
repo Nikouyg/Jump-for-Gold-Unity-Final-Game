@@ -10,6 +10,8 @@ public class PlayerController : MonoBehaviour
     public float gravityModifier;
     public bool isOnGround = true;
     public bool gameOver = false;
+    public bool enableAutoScroll = false;
+
 
     public ParticleSystem explosionParticle;
     public ParticleSystem dirtParticle;
@@ -23,37 +25,52 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         playerRb = GetComponent<Rigidbody>();
-        Physics.gravity *= gravityModifier;
+        Physics.gravity = new Vector3(0, -9.81f, 0) * gravityModifier;
         playerAnim = GetComponent<Animator>();
         playerAudio = GetComponent<AudioSource>();
     }
 
-    void Update()
+void Update()
+{
+    if (gameOver) return;
+
+    // Move left/right (side view)
+    float horizontalInput = Input.GetAxis("Horizontal"); // ← / → or A / D keys
+    float moveSpeed = 10f; // adjust as needed
+
+    // Move the player along X-axis (side view)
+    transform.Translate(Vector3.right * horizontalInput * moveSpeed * Time.deltaTime);
+
+    // Optionally flip player to face movement direction
+    if (horizontalInput > 0)
+        transform.rotation = Quaternion.Euler(0, 90, 0);  // face right
+    else if (horizontalInput < 0)
+        transform.rotation = Quaternion.Euler(0, -90, 0); // face left
+
+    // Jump with Space
+    if (Input.GetKeyDown(KeyCode.Space) && isOnGround)
     {
-        // Jump with Space
-        if (Input.GetKeyDown(KeyCode.Space) && isOnGround && !gameOver)
-        {
-            playerAudio.PlayOneShot(jumpSound, 1.0f);
-            playerRb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isOnGround = false;
-            playerAnim.SetTrigger("Jump_trig");
-            dirtParticle.Stop();
-        }
-
-        // Throw sphere with L
-        if (Input.GetKeyDown(KeyCode.L) && !gameOver)
-        {
-            // Spawn projectile slightly in front of player
-            GameObject projectile = Instantiate(projectilePrefab, transform.position + transform.forward + Vector3.up * 1f, Quaternion.identity);
-
-            // Apply forward force
-            Rigidbody projRb = projectile.GetComponent<Rigidbody>();
-            projRb.AddForce(transform.forward * throwForce);
-
-            // Auto destroy after 3 seconds to avoid clutter
-            Destroy(projectile, 3f);
-        }
+        playerAudio.PlayOneShot(jumpSound, 1.0f);
+        playerRb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        isOnGround = false;
+        playerAnim.SetTrigger("Jump_trig");
+        dirtParticle.Stop();
     }
+
+    // Throw sphere with L
+    if (Input.GetKeyDown(KeyCode.L))
+    {
+        GameObject projectile = Instantiate(
+            projectilePrefab,
+            transform.position + transform.forward + Vector3.up * 1f,
+            Quaternion.identity
+        );
+        Rigidbody projRb = projectile.GetComponent<Rigidbody>();
+        projRb.AddForce(transform.forward * throwForce);
+        Destroy(projectile, 3f);
+    }
+}
+
 
     private void OnCollisionEnter(Collision collision)
     {

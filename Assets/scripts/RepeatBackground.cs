@@ -4,6 +4,7 @@ public class RepeatBackground : MonoBehaviour
 {
     private Vector3 startPos;
     private float repeatWidth;
+    public Transform player;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -14,8 +15,10 @@ public class RepeatBackground : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(transform.position.x<startPos.x -repeatWidth)
+        //reposition background ahead of player as the player moves
+        if(player.position.x<startPos.x -repeatWidth)
         {
+            startPos.x += repeatWidth * 2;
 transform.position=startPos;
         }
     }
