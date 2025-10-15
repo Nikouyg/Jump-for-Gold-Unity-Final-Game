@@ -6,11 +6,10 @@ public class PlayerController : MonoBehaviour
     private Animator playerAnim;
     private AudioSource playerAudio;
 
-    public float jumpForce = 10;
+    public float jumpForce = 10f;
     public float gravityModifier = 1f;
     public bool isOnGround = true;
     public bool gameOver = false;
-    public bool enableAutoScroll = false;
 
     public ParticleSystem explosionParticle;
     public ParticleSystem dirtParticle;
@@ -27,6 +26,11 @@ public class PlayerController : MonoBehaviour
         Physics.gravity = new Vector3(0, -9.81f, 0) * gravityModifier;
         playerAnim = GetComponent<Animator>();
         playerAudio = GetComponent<AudioSource>();
+
+        // Keep player locked on Z=0 for a proper side view
+        Vector3 pos = transform.position;
+        pos.z = 0;
+        transform.position = pos;
     }
 
     void Update()
@@ -37,14 +41,15 @@ public class PlayerController : MonoBehaviour
         float horizontalInput = Input.GetAxis("Horizontal"); // ← / → or A / D keys
         float moveSpeed = 10f; // adjust as needed
 
-        // Move the player along X-axis (side view)
-        transform.Translate(Vector3.right * horizontalInput * moveSpeed * Time.deltaTime);
+        // Move player along X-axis only (no Z movement)
+        Vector3 move = new Vector3(horizontalInput * moveSpeed * Time.deltaTime, 0, 0);
+        transform.Translate(move, Space.World);
 
-        // Optionally flip player to face movement direction
+        // Flip player to face movement direction (no rotation into camera)
         if (horizontalInput > 0)
-            transform.rotation = Quaternion.Euler(0, 90, 0);  // face right
+            transform.localScale = new Vector3(1, 1, 1);   // face right
         else if (horizontalInput < 0)
-            transform.rotation = Quaternion.Euler(0, -90, 0); // face left
+            transform.localScale = new Vector3(-1, 1, 1);  // face left
 
         // Jump with Space
         if (Input.GetKeyDown(KeyCode.Space) && isOnGround)
@@ -59,23 +64,25 @@ public class PlayerController : MonoBehaviour
         // Throw sphere with L
         if (Input.GetKeyDown(KeyCode.L))
         {
+            // Create projectile slightly in front of player
             GameObject projectile = Instantiate(
                 projectilePrefab,
-                transform.position + transform.forward + Vector3.up * 1f,
+                transform.position + Vector3.right * transform.localScale.x + Vector3.up * 1f,
                 Quaternion.identity
             );
+
             Rigidbody projRb = projectile.GetComponent<Rigidbody>();
-            projRb.AddForce(transform.forward * throwForce);
+            projRb.AddForce(Vector3.right * transform.localScale.x * throwForce);
             Destroy(projectile, 3f);
         }
 
-        // Clamp player position (so they stay in camera range)
+        // Clamp player position (keep in camera view)
         float minX = -20f;
         float maxX = 100f; // adjust to your level width
         transform.position = new Vector3(
             Mathf.Clamp(transform.position.x, minX, maxX),
             transform.position.y,
-            transform.position.z
+            0 // lock Z = 0 so player stays on side axis
         );
     }
 
