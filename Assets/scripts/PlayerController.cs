@@ -7,11 +7,10 @@ public class PlayerController : MonoBehaviour
     private AudioSource playerAudio;
 
     public float jumpForce = 10;
-    public float gravityModifier;
+    public float gravityModifier = 1f;
     public bool isOnGround = true;
     public bool gameOver = false;
     public bool enableAutoScroll = false;
-
 
     public ParticleSystem explosionParticle;
     public ParticleSystem dirtParticle;
@@ -30,32 +29,32 @@ public class PlayerController : MonoBehaviour
         playerAudio = GetComponent<AudioSource>();
     }
 
-void Update()
-{
-    if (gameOver) return;
-
-    // Move left/right (side view)
-    float horizontalInput = Input.GetAxis("Horizontal"); // ← / → or A / D keys
-    float moveSpeed = 10f; // adjust as needed
-
-    // Move the player along X-axis (side view)
-    transform.Translate(Vector3.right * horizontalInput * moveSpeed * Time.deltaTime);
-
-    // Optionally flip player to face movement direction
-    if (horizontalInput > 0)
-        transform.rotation = Quaternion.Euler(0, 90, 0);  // face right
-    else if (horizontalInput < 0)
-        transform.rotation = Quaternion.Euler(0, -90, 0); // face left
-
-    // Jump with Space
-    if (Input.GetKeyDown(KeyCode.Space) && isOnGround)
+    void Update()
     {
-        playerAudio.PlayOneShot(jumpSound, 1.0f);
-        playerRb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-        isOnGround = false;
-        playerAnim.SetTrigger("Jump_trig");
-        dirtParticle.Stop();
-    }
+        if (gameOver) return;
+
+        // Move left/right (side view)
+        float horizontalInput = Input.GetAxis("Horizontal"); // ← / → or A / D keys
+        float moveSpeed = 10f; // adjust as needed
+
+        // Move the player along X-axis (side view)
+        transform.Translate(Vector3.right * horizontalInput * moveSpeed * Time.deltaTime);
+
+        // Optionally flip player to face movement direction
+        if (horizontalInput > 0)
+            transform.rotation = Quaternion.Euler(0, 90, 0);  // face right
+        else if (horizontalInput < 0)
+            transform.rotation = Quaternion.Euler(0, -90, 0); // face left
+
+        // Jump with Space
+        if (Input.GetKeyDown(KeyCode.Space) && isOnGround)
+        {
+            playerAudio.PlayOneShot(jumpSound, 1.0f);
+            playerRb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            isOnGround = false;
+            playerAnim.SetTrigger("Jump_trig");
+            dirtParticle.Stop();
+        }
 
         // Throw sphere with L
         if (Input.GetKeyDown(KeyCode.L))
@@ -69,17 +68,16 @@ void Update()
             projRb.AddForce(transform.forward * throwForce);
             Destroy(projectile, 3f);
         }
-    float horizontalInput = Input.GetAxis("Horizontal");
-float moveSpeed = 10f;
-transform.Translate(Vector3.right * horizontalInput * moveSpeed * Time.deltaTime);
 
-// Clamp player position (so they stay in camera range)
-float minX = -20f;
-float maxX = 100f; // adjust to your level width
-transform.position = new Vector3(Mathf.Clamp(transform.position.x, minX, maxX), transform.position.y, transform.position.z);
-
-}
-
+        // Clamp player position (so they stay in camera range)
+        float minX = -20f;
+        float maxX = 100f; // adjust to your level width
+        transform.position = new Vector3(
+            Mathf.Clamp(transform.position.x, minX, maxX),
+            transform.position.y,
+            transform.position.z
+        );
+    }
 
     private void OnCollisionEnter(Collision collision)
     {
